@@ -28,13 +28,16 @@
       width   : window.innerWidth,
       height  : window.innerHeight
     };
-  //  window.onresize = (function(window) {
-  //    this.options.width  = window.innerWidth;
-  //    this.options.height = window.innerHeight;
-  //    this.svg
-  //      .attr('width', this.options.width)
-  //      .attr('height', this.options.height);
-  //  }).bind(this, window);
+    window.onresize = (function(window, d3) {
+      clearInterval(this.setInterval);
+      document.getElementsByTagName('svg')[0].remove();
+      this.options.width  = window.innerWidth;
+      this.options.height = window.innerHeight;
+      this.svg
+        .attr('width', this.options.width)
+        .attr('height', this.options.height);
+      init.apply(this, [window, d3]);
+    }).bind(this, window, d3);
 
     // data
     this.stack  = d3.layout.stack();
@@ -59,7 +62,7 @@
       .enter().append('path')
         .attr('d', this.area)
         .style('fill', function(arr,i) { return that.color[i]; });
-    setInterval(render.bind(this), 100); // update 10/sec
+    this.setInterval = setInterval(render.bind(this), 100); // update 10/sec
   }
 
   function render() {
