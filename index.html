@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>memoryVis</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin: 0;
+      height: 99%;
+      width: 100%;
+      overflow: hidden;
+    }
+  </style>
+  <script src="d3.min.js" charset="utf-8"></script>
+</head>
+<body>
+<script>
+'use strict';
+(function(window, d3) {
+  init.apply(this, [window, d3]);
+
+  function init(window, d3) {
+    var that = this;
+
+    // resize window
+    this.options = {
+      width   : window.innerWidth,
+      height  : window.innerHeight
+    };
+  //  window.onresize = (function(window) {
+  //    this.options.width  = window.innerWidth;
+  //    this.options.height = window.innerHeight;
+  //    this.svg
+  //      .attr('width', this.options.width)
+  //      .attr('height', this.options.height);
+  //  }).bind(this, window);
+
+    // data
+    this.stack  = d3.layout.stack();
+    this.data   = this.stack(genData([[], [], [], []],this.options.width));
+
+    // d3 setup
+    this.x      = d3.scale.linear()
+                    .domain([0, this.options.width])
+                    .range([0, this.options.width]);
+    this.y      = d3.scale.linear()
+                    .domain([0, 100])
+                    .range([this.options.height, 0]);
+    this.color  = ['#00FF0A', '#021AE8', '#E8ED0C', 'gray'];
+    this.area   = d3.svg.area()
+                    .x(function(d) { return that.x(d.x); })
+                    .y0(function(d) { return that.y(d.y0); })
+                    .y1(function(d) { return that.y(d.y0 + d.y); });
+    this.svg    = d3.select('body').append('svg')
+                    .attr('width', this.options.width)
+                    .attr('height', this.options.height);
+    this.svg.selectAll('path').data(this.data)
+      .enter().append('path')
+        .attr('d', this.area)
+        .style('fill', function(arr,i) { return that.color[i]; });
+    setInterval(render.bind(this), 100); // update 10/sec
+  }
+
+  function render() {
+    this.data = this.stack(genData(this.data));
+    this.svg.selectAll('path').data(this.data).attr('d', this.area);
+  }
+
+  function genData(data, points) {
+    var i,
+        types = ['used', 'buffer', 'cache', 'free'],
+        getYByType = {
+          _prev: {
+            cache: 10,
+            buffer: 1,
+            used: 40
+          },
+          _getPoint: function(upperBound, lowerBound, type, prev) {
+            var change = Math.floor(Math.random() * 5 - 2);
+            if (!prev) prev = this._prev[type];
+
+            return this._prev[type] = prev + change > upperBound || prev + change < lowerBound ?
+              prev - change
+                :
+              prev + change
+            ;
+          },
+          free: function() {
+            var prev = this._prev;
+            return 100 - prev.cache - prev.buffer - prev.used;
+          },
+          cache: function(prev) {
+            return this._getPoint(30, 10, 'cache', prev);
+          },
+          buffer: function(prev) {
+            return this._getPoint(10, 2, 'buffer', prev);
+          },
+          used: function(prev) {
+            return this._getPoint(60, 20, 'used', prev)
+          }
+        }
+    ;
+
+    if (!points) { // gen sigle point
+      for (var arrNum = 0; arrNum < 4; arrNum++) {
+        for (i=0; i<data[arrNum].length - 1; i++) {
+          data[arrNum][i].y = data[arrNum][i+1].y;
+        }
+        data[arrNum][i].y = getYByType[types[arrNum]](data[arrNum][i-1].y);
+      }
+    } else { // called on init
+      for (i=0; i<points; i++) {
+        types.forEach(function(type, arrNum) {
+          data[arrNum].push({
+            x: i,
+            y: getYByType[type]()
+        })});
+      }
+    }
+
+    return data;
+  }
+
+}).apply({}, [window, d3]);
+</script>
+</body>
+</html>
