@@ -50,7 +50,7 @@
     this.y      = d3.scale.linear()
                     .domain([0, 100])
                     .range([this.options.height, 0]);
-    this.color  = ['#00FF0A', '#021AE8', '#E8ED0C', 'gray'];
+    this.color  = ['#FF6B6B', '#C7F464', '#4ECDC4', '#556270'];
     this.area   = d3.svg.area()
                     .x(function(d) { return that.x(d.x); })
                     .y0(function(d) { return that.y(d.y0); })
