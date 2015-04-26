@@ -3,7 +3,8 @@
 
 Simple memory timeseries
 
-green = used mem
-blue = buffers
-yellow = cache
-gray = free
+memory from top to bottom:
+free
+cache
+buffers
+used
