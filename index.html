@@ -29,7 +29,7 @@
       height  : window.innerHeight
     };
     window.onresize = (function(window, d3) {
-      clearInterval(this.setInterval);
+      cancelAnimationFrame(this.animationFrame);
       document.getElementsByTagName('svg')[0].remove();
       this.options.width  = window.innerWidth;
       this.options.height = window.innerHeight;
@@ -62,12 +62,14 @@
       .enter().append('path')
         .attr('d', this.area)
         .style('fill', function(arr,i) { return that.color[i]; });
-    this.setInterval = setInterval(render.bind(this), 100); // update 10/sec
+    this.renderFn = render.bind(this);
+    this.animationFrame = requestAnimationFrame(this.renderFn);
   }
 
   function render() {
     this.data = this.stack(genData(this.data));
     this.svg.selectAll('path').data(this.data).attr('d', this.area);
+    this.animationFrame = requestAnimationFrame(this.renderFn);
   }
 
   function genData(data, points) {
