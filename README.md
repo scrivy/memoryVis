@@ -1,4 +1,4 @@
-[memoryVis](http://files.danielscrivano.com/memoryVis/)
+[memoryVis](https://rawgit.com/scrivy/memoryVis/master/)
 ======
 
 Simple memory timeseries
